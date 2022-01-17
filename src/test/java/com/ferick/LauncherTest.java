@@ -19,15 +19,7 @@ class LauncherTest {
     void launchTest() {
         var launcher = new Launcher<Integer, Scenario, String>(RESOURCES);
         var testHandler = new TestHandler();
-        launcher.launch(SCENARIOS, testHandler, (resource, scenario) -> {
-            var result = scenario.act(resource);
-            try {
-                TimeUnit.MILLISECONDS.sleep(resource);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            return result;
-        });
+        launcher.launch(SCENARIOS, testHandler, (resource, scenario) -> scenario.act(resource));
         launcher.shutdown();
         var results = testHandler.getResults();
         results.forEach(System.out::println);
@@ -43,8 +35,13 @@ class LauncherTest {
         }
 
         String act(Integer resource) {
-            return number + ". RESULT: resource " + resource + ", " +
-                    resource * new Random().nextInt(99) + " ms" +
+            var timeout = resource * new Random().nextInt(99);
+            try {
+                TimeUnit.MILLISECONDS.sleep(timeout);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return number + ". RESULT: resource " + resource + ", " + timeout + " ms" +
                     ", thread " + Thread.currentThread().getName();
         }
     }

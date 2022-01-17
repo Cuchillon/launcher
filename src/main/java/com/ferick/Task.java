@@ -21,9 +21,10 @@ public class Task<T, U, R> implements Callable<R> {
         try {
             var resource = resources.take();
             launchResult = function.apply(resource, scenario);
-            resources.free();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        } finally {
+            resources.free();
         }
         return launchResult;
     }
