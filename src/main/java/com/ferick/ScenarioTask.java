@@ -3,13 +3,13 @@ package com.ferick;
 import java.util.concurrent.Callable;
 import java.util.function.BiFunction;
 
-public class Task<T, U, R> implements Callable<R> {
+public class ScenarioTask<T, U, R> implements Callable<R> {
 
     private final BoundedResourcePool<T> resources;
     private final U scenario;
     private final BiFunction<T, U, R> function;
 
-    public Task(BoundedResourcePool<T> resources, U scenario, BiFunction<T, U, R> function) {
+    public ScenarioTask(BoundedResourcePool<T> resources, U scenario, BiFunction<T, U, R> function) {
         this.resources = resources;
         this.scenario = scenario;
         this.function = function;
