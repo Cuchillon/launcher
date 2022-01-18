@@ -4,9 +4,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
-public class Launcher<T, U, R> {
+public class Launcher<T, R> {
 
     private final ExecutorService executor;
     private final BoundedResourcePool<T> resources;
@@ -23,10 +24,31 @@ public class Launcher<T, U, R> {
      * @param resultHandler handler for saving and getting scenario execution results
      * @param function scenario execution logic
      */
-    public void launch(List<U> scenarios, ResultHandler<R> resultHandler, BiFunction<T, U, R> function) {
+    public <U> void launch(List<U> scenarios, ResultHandler<R> resultHandler, BiFunction<T, U, R> function) {
         CompletionService<R> completionService = new ExecutorCompletionService<>(executor);
-        scenarios.forEach(scenario -> completionService.submit(new Task<>(resources, scenario, function)));
-        IntStream.range(0, scenarios.size()).forEach(i -> {
+        launch(completionService, scenarios.size(), resultHandler, () ->
+                scenarios.forEach(scenario -> completionService.submit(new ScenarioTask<>(resources, scenario, function))));
+    }
+
+    /**
+     * Method for multithreading launching scenarios using bounded resource pool
+     *
+     * @param count count to be launched
+     * @param resultHandler handler for saving and getting scenario execution results
+     * @param function scenario execution logic
+     */
+    public void launch(Integer count, ResultHandler<R> resultHandler, Function<T, R> function) {
+        CompletionService<R> completionService = new ExecutorCompletionService<>(executor);
+        launch(completionService, count, resultHandler, () ->
+                IntStream.range(0, count).forEach(i -> completionService.submit(new SimpleTask<>(resources, function))));
+    }
+
+    private void launch(CompletionService<R> completionService,
+                        Integer count,
+                        ResultHandler<R> resultHandler,
+                        Runnable runnable) {
+        runnable.run();
+        IntStream.range(0, count).forEach(i -> {
             try {
                 var launchResultFuture = completionService.take();
                 var launchResult = launchResultFuture.get();

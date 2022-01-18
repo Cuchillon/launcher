@@ -1,5 +1,6 @@
 package com.ferick;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -16,14 +17,32 @@ class LauncherTest {
     private static final List<String> STORAGE = Collections.synchronizedList(new ArrayList<>());
 
     @Test
-    void launchTest() {
-        var launcher = new Launcher<Integer, Scenario, String>(RESOURCES);
+    void launchScenarioTest() {
+        var launcher = new Launcher<Integer, String>(RESOURCES);
         var testHandler = new TestHandler();
         launcher.launch(SCENARIOS, testHandler, (resource, scenario) -> scenario.act(resource));
         launcher.shutdown();
         var results = testHandler.getResults();
         results.forEach(System.out::println);
         assertEquals(100, results.size());
+    }
+
+    @Test
+    void launchSimpleTest() {
+        var launcher = new Launcher<Integer, String>(RESOURCES);
+        var testHandler = new TestHandler();
+        var rand = new Random();
+        launcher.launch(100, testHandler, (resource) -> new Scenario(rand.nextInt(99)).act(resource));
+        launcher.shutdown();
+        var results = testHandler.getResults();
+        results.forEach(System.out::println);
+        assertEquals(100, results.size());
+    }
+
+    @AfterEach
+    void clearStorage() {
+        STORAGE.clear();
+        System.out.println("END OF TEST---------------------------------------------------------------------------");
     }
 
     static class Scenario {
