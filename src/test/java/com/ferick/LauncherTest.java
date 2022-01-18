@@ -60,8 +60,8 @@ class LauncherTest {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-            return number + ". RESULT: resource " + resource + ", " + timeout + " ms" +
-                    ", thread " + Thread.currentThread().getName();
+            return String.format("%d. RESULT: resource %d, %d ms, thread %s",
+                    number, resource, timeout, Thread.currentThread().getName());
         }
     }
 
